@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Fallout</title>
+    <style>
+        * {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canv">
+    </canvas>
+
+    <script type="module">
+        import "/engine/Engine.js"
+        import "/games/scenes/GameScene.js"
+        Engine.currentScene = new GameScene();
+
+        Engine.setup()
+    </script>
+</body>
+
+</html>
