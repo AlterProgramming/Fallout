@@ -8,7 +8,6 @@ class Circle extends Component {
         ctx.beginPath();
         ctx.fillStyle = this.fill
         ctx.strokeStyle = this.stroke
-        ctx.lineWidth = 5
         ctx.arc(this.transform.x, this.transform.y, this.transform.scaleX, 0, Math.PI * 2)
         ctx.fill()
         ctx.stroke()

@@ -36,6 +36,9 @@ class Engine {
     //Draw in world space
     Engine.currentScene.draw(ctx)
 
+    // Remove amything marked for deletion
+    Engine.currentScene.gameObjects = Engine.currentScene.gameObjects.filter(o => o.markForDestroy === false)
+
     //Draw in Screen/UI space
     //currentScene.drawUI(ctx)
   }
