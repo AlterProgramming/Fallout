@@ -4,10 +4,9 @@ class MarkForDeletionComponent extends Component {
     }
     update(){
         if (
-            this.transform.y +50 < 0){
+            this.transform.y +this.transform.scaleY < 0){
             GameObject.destroy(this.parent)
         }
     }
 }
 window.MarkForDeletionComponent = MarkForDeletionComponent
-export default MarkForDeletionComponent

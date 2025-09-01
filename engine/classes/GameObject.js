@@ -21,7 +21,8 @@ class GameObject {
 
     /** The list of components in this game object */
     components = []
-
+    /* Defaults to the layer 0*/
+    layer = 0
     /**
      * Create a new game object. Note that this also instantiate and adds the 
      * first component, an instance of `Transform` so that all game objects are
@@ -33,6 +34,7 @@ class GameObject {
         this.name = name
         this.addComponent(new Transform())
         this.markForDestroy = false;
+        this.hasSpawned = false;
     }
 
     /**
@@ -52,6 +54,10 @@ class GameObject {
         this.components.push(component);
         component.parent = this;
     }
+    getComponent(name){
+        return this.components.find(c=>c.constructor.name == name);
+    }
+
 
     /**
      * Start the game object by calling start on all its components.
@@ -78,7 +84,17 @@ class GameObject {
             }
         }
     }
-
+    //
+    // onSpawn(ctx){
+    //     if(!this.hasSpawned){
+    //         this.hasSpawned = true
+    //         for (let component of this.components) {
+    //             if (component.onSpawn) {
+    //                 component.onSpawn(ctx)
+    //             }
+    //         }
+    //     }
+    // }
     /**
      * Draw the game object by calling draw on all its components.
      * 
@@ -119,8 +135,13 @@ class GameObject {
      * initialize this game object.
      * @param {GameObject} gameObject The game object to add to the scene
      */
-    static instantiate(gameObject) {
-        Engine.currentScene.gameObjects.push(gameObject)
+    static instantiate(gameObject, x=0, y=0, scaleX = 1, scaleY = 1) {
+        Engine.currentScene.gameObjects.push(gameObject);
+        gameObject.transform.x =x;
+        gameObject.transform.y =y;
+        gameObject.transform.scaleX =scaleX;
+        gameObject.transform.scaleY =scaleY;
+
     }
 
     /**

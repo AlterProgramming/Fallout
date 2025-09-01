@@ -16,10 +16,12 @@
     </canvas>
 
     <script type="module">
-        import "/engine/Engine.js"
-        import "/games/scenes/GameScene.js"
-        import "/games/scenes/DeathScene.js"
+        import "../engine/Engine.js"
+        import "./scenes/GameScene.js"
+        import "./scenes/DeathScene.js"
+        import "./scenes/3DScene.js"
         Engine.currentScene = new GameScene();
+        // Engine.currentScene = new ThreeDScene();
 
         Engine.setup()
     </script>

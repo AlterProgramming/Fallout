@@ -1,20 +1,30 @@
-import "/engine/classes/Component.js"
-import "/engine/classes/GameObject.js"
-import "/engine/classes/Scene.js"
+import "./classes/Component.js"
+import "./classes/GameObject.js"
+import "./classes/Scene.js"
 
-import "/engine/components/Circle.js"
-import "/engine/components/Point.js"
-import "/engine/components/Rectangle.js"
-import "/engine/components/Text.js"
-import "/engine/components/Transform.js"
+import "./geometry/Vector.js"
+import "./geometry/Line.js"
+import "./geometry/Rectangle.js"
+import "./geometry/Circle.js"
 
-import "/engine/static/Collisions.js"
-import "/engine/static/Input.js"
-import "/engine/static/Globals.js"
-import "/engine/static/Time.js"
+import "./components/Circle.js"
+import "./components/Point.js"
+import "./components/Rectangle.js"
+import "./components/Text.js"
+import "./components/Transform.js"
+
+import "./static/Collisions.js"
+import "./static/CollisionGeometric.js"
+import "./static/Input.js"
+import "./static/Globals.js"
+import "./static/Time.js"
+import "./static/EventSystem.js"
+
+import "./prefabs/Camera.js"
 
 
 class Engine {
+  isSystemPaused = false;
   /**
          * The game loop.
          * The game loop calls update and draw using a timer
@@ -28,17 +38,37 @@ class Engine {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
-    Engine.currentScene.start(ctx);
-
-    // Update the current scene
-    Engine.currentScene.update(ctx)
-
+    //System-level pause
+    if (Input.keysUpThisFrame.includes("Escape")) {
+      if (Engine.isSystemPaused) {
+        Engine.isSystemPaused = false;
+      }
+      else {
+        Engine.isSystemPaused = true;
+      }
+    }
     //Draw in world space
     Engine.currentScene.draw(ctx)
+    if(!Engine.isSystemPaused){
 
-    // Remove amything marked for deletion
-    Engine.currentScene.gameObjects = Engine.currentScene.gameObjects.filter(o => o.markForDestroy === false)
+      
+      Engine.currentScene._start(ctx);
+      
+      // Initialize new spawned game objects
+      Engine.currentScene.onSpawn(ctx)
+      // Update the current scene
+      Engine.currentScene.update(ctx)
+      
+      
+      // Remove amything marked for deletion
+      Engine.currentScene.gameObjects = Engine.currentScene.gameObjects.filter(o => o.markForDestroy === false)
+    }
 
+    //Update the input 
+    Input.update()
+
+    //Update the time
+    Time.update()
     //Draw in Screen/UI space
     //currentScene.drawUI(ctx)
   }
@@ -55,6 +85,10 @@ class Engine {
     //gameLoop every 100ms.
 
     setInterval(Engine.gameLoop, Time.ms)
+  }
+  static changeScene(scene){
+    EventSystem.listeners = []
+    Engine.currentScene = scene;
   }
 }
 

@@ -3,60 +3,42 @@ import "../prefabs/PlayerPrefab.js"
 import "../prefabs/SquareFoesPrefab.js"
 import "../prefabs/EnemySpawnerPrefab.js"
 import "../prefabs/TimePrefab.js"
+import "../prefabs/SlowDownSkillPrefab.js"
+import "../prefabs/FreeMovementSkillPrefab.js"
+import "../prefabs/ControllerPrefab.js"
+import "../prefabs/CloudPrefab.js"
+import "../prefabs/CloudSpawnerPrefab.js"
+import "../prefabs/HealthPrefab.js"
 class GameScene extends Scene {
     constructor(){
         super('lightgray');
         Globals.score = 0
-        let timeGameObject = new TimePrefab()
-        this.gameObjects.push(timeGameObject)
+        this.aspectRatio = 1;
+        this.logicalWidth = 750; 
+    }
+    start(ctx){
+        GameObject.instantiate(new TimePrefab())
+        GameObject.instantiate(new PlayerPrefab(),300 + this.letterBox1End, 100,35 )
+        // GameObject.instantiate(new ScorePrefab(),window.innerWidth - 100, 50 )
+        GameObject.instantiate(new ScorePrefab(),this.letterBox2Start  , 50 )
+        GameObject.instantiate(new EnemySpawnerPrefab())
+        // GameObject.instantiate(new SlowDownSkillPrefab(), window.innerWidth-60, window.innerHeight-100,100,100)
+        GameObject.instantiate(new SlowDownSkillPrefab(), this.letterBox2Start, this.logicalWidthViewHeightInPixels ,100,100)
+        GameObject.instantiate(new FreeMovementSkillPrefab(), this.letterBox2Start -120, this.logicalWidthViewHeightInPixels,100,100)   
+        GameObject.instantiate(new ControllerPrefab()) 
+        
+        GameObject.instantiate(new CloudPrefab(), this.logicalStartX, this.logicalStartY , 25)
+        GameObject.instantiate(new CloudPrefab(), this.logicalStartX + 25, this.logicalStartY , 25)
+        GameObject.instantiate(new CloudSpawnerPrefab())
+        GameObject.instantiate(new HealthPrefab(), this.logicalStartX +50, this.logicalWidthViewHeightInPixels, 100,100)
+        
 
-        let circleGameObject = new PlayerPrefab()
-        circleGameObject.addComponent(new Circle('darkgreen', 'lightgrey'))
-        circleGameObject.addComponent(new KeyboardComponent())
-        circleGameObject.transform.x = 300
-        circleGameObject.transform.y = 100
-        circleGameObject.transform.scaleX = 35
-
-        this.gameObjects.push(circleGameObject)
-        let scoreGameObject = new ScorePrefab()
-        scoreGameObject.transform.x = window.innerWidth - 100;
-        scoreGameObject.transform.y = 50;
-        // scoreGameObject.addComponent(new Text("Score", "16px Arial", "black"))
-        // scoreGameObject.addComponent(new ScoreUpdaterComponent());
-        // scoreGameObject.addComponent(new ScoreReaderComponent())
-        this.gameObjects.push(scoreGameObject)
-        let squareFoeGameObject = new SquareFoesPrefab();
-        // squareFoeGameObject.transform.x =500
-        // squareFoeGameObject.transform.y= 500
-        // squareFoeGameObject.transform.scaleX= 100
-        // squareFoeGameObject.transform.scaleY = 100
-        // squareFoeGameObject.transform.speed = 1
-        // this.gameObjects.push(squareFoeGameObject)
-
-        let enemySpawner = new EnemySpawnerPrefab();
-        this.gameObjects.push(enemySpawner)
-
-
+        // GAME object to spawn clouds on layer 2 every time the button C is pressed through the event system, blurred
+        // Need EventSystem.js
 
 
     }
-    
-    
-    // start(ctx){
-    //     // let circleGameObject = new GameObject('CircleGameObject')
-    //     // circleGameObject.addComponent(new Circle())
-    //     // circleGameObject.addComponent(new KeyboardComponent())
-    //     // GameObject.instantiate(new PlayerPrefab(), 300, 100, 50)
-    //     // let scoreGameObject = new GameObject("ScoreGameObject")
-    //     // GameObject.instantiate(new ScorePrefab(), window.innerWidth - 100, 50)
-    //     // scoreGameObject.transform.x = window.innerWidth - 100;
-    //     // scoreGameObject.transform.y = 50;
-    //     // scoreGameObject.addComponent(new Text("Score", "16px Arial", "black"))
-    //     // scoreGameObject.addComponent(new ScoreUpdaterComponent());
-    //     // scoreGameObject.addComponent(new ScoreReaderComponent())
-        
-    //     // this.gameObjects.push(scoreGameObject)
-    // }
+
 }
 window.GameScene = GameScene
 export default GameScene

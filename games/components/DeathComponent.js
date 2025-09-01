@@ -1,27 +1,34 @@
 class DeathComponent extends Component {
     constructor() {
         super();
+        // EventSystem.registerListener(this)
     }
     update() {
         let obstacles = GameObject.filter('SquareFoesPrefab')
         for (let obstacle of obstacles) {
+            
+            if (CollisionGeometric.isCircleRectangleCollision(
 
 
-            if (Collisions.isRectangleRectangleCollision(
-                {
-                    x: this.transform.x,
-                    y: this.transform.y,
-                    width: this.transform.scaleX,
-                    height: this.transform.scaleY
-                },
-                {
-                    x: obstacle.transform.x,
-                    y: obstacle.transform.y,
-                    width: obstacle.transform.scaleX,
-                    height: obstacle.transform.scaleY
-                }
+                new Circle2(
+                    this.transform.x,
+                    this.transform.y,
+                    this.transform.scaleX
+                ),
+                new Rectangle2(
+                    obstacle.transform.x,
+                    obstacle.transform.y,
+                    obstacle.transform.scaleX,
+                    obstacle.transform.scaleY
+                )
             )) {
-                Engine.currentScene = new DeathScene()
+                EventSystem.fireEvent({
+                    origin: this.parent,
+                    dest:null,
+                    type: "collision"
+                })
+                
+                return
             }
         }
     }

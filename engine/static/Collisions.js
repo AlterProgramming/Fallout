@@ -29,6 +29,12 @@ class Collisions {
             return false;
         return true;
     }
+    static isCircleRectangleCollision(circ, rect){
+        // (x-x1)^2 + (y-y1)^2 = radius^2
+        // if the circle is top of the rectangle, check against top
+
+        return false
+    }
 
 }
 

@@ -1,10 +1,10 @@
 class MoveUpComponent extends Component {
-    constructor(){
+    constructor(speed){
         super();
+        this.speed = 1
     }
-    update(){
-        
-        this.transform.y -= 8 * this.transform.speed * this.transform.timeRatio
+    update(){    
+        this.transform.y -= 8 * this.speed * this.transform.timeRatio
     }
 }
 window.MoveUpComponent = MoveUpComponent
