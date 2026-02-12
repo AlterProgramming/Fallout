@@ -6,12 +6,28 @@ class Text extends Component {
     this.fill = fill;
 
   }
-  draw(ctx) {
-    ctx.fillStyle = this.fill
-    ctx.font = this.font
-    ctx.fillText(this.text, this.transform.x, this.transform.y)
+
+  start() {
+    this.textObject = new window.PIXI.Text(this.text, {
+      font: this.font,
+      fill: this.fill,
+    });
+    Engine.currentScene.worldContainer.addChild(this.textObject);
+    this.parent.displayObject = this.textObject;
+  }
+
+  update() {
+    if (!this.textObject) return;
+    this.textObject.text = this.text;
+    this.textObject.style.font = this.font;
+    this.textObject.style.fill = this.fill;
+    this.textObject.position.set(this.transform.x, this.transform.y);
+  }
+
+  onDestroy() {
+    this.textObject?.destroy();
   }
 }
 
-window.Text = Text
+window.Text = Text;
 export default Text;

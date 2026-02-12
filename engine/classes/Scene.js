@@ -20,103 +20,116 @@ class Scene {
         this.backgroundColor = backgroundColor
         this.hasStarted = false;
     }
-    _start(ctx) {
+
+    setupContainers() {
+        if (this.stageContainer) return;
+
+        const { Container } = window.PIXI;
+        this.stageContainer = new Container();
+        this.stageContainer.sortableChildren = true;
+        this.worldContainer = new Container();
+        this.worldContainer.sortableChildren = true;
+        this.stageContainer.addChild(this.worldContainer);
+        Engine.app.stage.addChild(this.stageContainer);
+    }
+
+    _start() {
+        this.setupContainers();
+        this.applyViewport();
+
         if (!this.hasStarted) {
             this.hasStarted = true;
+            const color = typeof this.backgroundColor === "number"
+                ? this.backgroundColor
+                : window.PIXI.utils.string2hex(this.backgroundColor);
+            Engine.app.renderer.background.color = color;
             if(this.start)
-            this.start(ctx)
+            this.start()
             for (const gameObject of this.gameObjects) {
                 if (gameObject.start) {
-                    gameObject.start(ctx);
+                    gameObject.start();
                 }
             }
         }
     }
-    onSpawn(ctx) {
+    onSpawn() {
         for (const gameObject of this.gameObjects) {
             if (gameObject.onSpawn && !gameObject.hasStarted) {
-                gameObject.onSpawn(ctx);
+                gameObject.onSpawn();
                 gameObject.hasStarted = true;
             }
         }
 
     }
-    update(ctx) {
-        for (const gameObject of this.gameObjects) {
-            if (gameObject.update) {
-                gameObject.update(ctx);
-            }
-        }
-    }
-    draw(ctx) {
-        ctx.fillStyle = this.backgroundColor;
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-
-        ctx.save()
-        let windowAspectRatio = ctx.canvas.height / ctx.canvas.width;
-
-        let isLogicalCoordinates = this.logicalWidth >0 && this.aspectRatio > 0
-
-        if(isLogicalCoordinates) {
-            if(this.aspectRatio> windowAspectRatio){
-                this.letterBox1End = (ctx.canvas.width) / 2 - (ctx.canvas.height / this.aspectRatio) / 2;
-                this.letterBox2Start = (ctx.canvas.width) / 2 + (ctx.canvas.height / this.aspectRatio) / 2;
-                ctx.translate(this.letterBox1End, 0)
-                let scaleFactor = ctx.canvas.height / this.logicalWidth;
-                ctx.scale(scaleFactor, scaleFactor)
-
-                this.logicalWidthViewWidthInPixels = this.letterBox2Start - this.letterBox1End;
-                this.logicalWidthViewHeightInPixels = ctx.canvas.height;
-            } else {
-                this.letterBox1End = (ctx.canvas.height) / 2 - (ctx.canvas.width * this.aspectRatio) / 2;
-                this.letterBox2Start = (ctx.canvas.width * this.aspectRatio) / 2 + (ctx.canvas.height) / 2;
-                ctx.translate(0, this.letterBox1End)
-                let scaleFactor = ctx.canvas.width / (this.logicalWidth / this.aspectRatio);
-                ctx.scale(scaleFactor, scaleFactor)
-
-                this.logicalWidthViewWidthInPixels = ctx.canvas.width;
-                this.logicalWidthViewHeightInPixels = this.letterBox2Start - this.letterBox1End;
-            }
-        }
-        ctx.scale(Camera.main.transform.scaleX, Camera.main.transform.scaleY)
-        ctx.translate(-Camera.main.transform.x, -Camera.main.transform.y)
-                // ctx.translate(ctx.canvas.width/2, ctx.canvas.height/2)
+    update() {
+        this.applyViewport();
 
         this.gameObjects.sort((a, b)=> a.layer - b.layer)
 
-        /** To do, add blur to gameobject of different layers */
         for (const gameObject of this.gameObjects) {
-            if (gameObject.layer == -1) {
-                //Glow
-                ctx.filter = "blur(2px)"
+            if (gameObject.update) {
+                gameObject.update();
             }
-            else {
-                //Don't glow
-                ctx.filter = "none"
-            }
-            if (gameObject.draw) {
-                gameObject.draw(ctx)
+            if (gameObject.displayObject) {
+                gameObject.displayObject.zIndex = gameObject.layer;
             }
         }
-        ctx.restore()
+    }
 
-        ctx.fillStyle = "black"
+    applyViewport() {
+        const w = Engine.app.renderer.width;
+        const h = Engine.app.renderer.height;
+        let baseX = 0;
+        let baseY = 0;
+        let scaleX = 1;
+        let scaleY = 1;
 
-        //Actually draw the letterboxes
+        const windowAspectRatio = h / w;
+        const isLogicalCoordinates = this.logicalWidth > 0 && this.aspectRatio > 0;
+
         if (isLogicalCoordinates) {
             if (this.aspectRatio > windowAspectRatio) {
-
-                ctx.fillRect(0, 0, this.letterBox1End, ctx.canvas.height);
-                ctx.fillRect(this.letterBox2Start, 0, ctx.canvas.width, ctx.canvas.height);
-            }
-            else {
-                ctx.fillRect(0, 0, ctx.canvas.width, this.letterBox1End);
-                ctx.fillRect(0, this.letterBox2Start, ctx.canvas.width, ctx.canvas.height);
+                this.letterBox1End = (w) / 2 - (h / this.aspectRatio) / 2;
+                this.letterBox2Start = (w) / 2 + (h / this.aspectRatio) / 2;
+                scaleX = h / this.logicalWidth;
+                scaleY = scaleX;
+                baseX = this.letterBox1End;
+                this.logicalWidthViewWidthInPixels = this.letterBox2Start - this.letterBox1End;
+                this.logicalWidthViewHeightInPixels = h;
+            } else {
+                this.letterBox1End = (h) / 2 - (w * this.aspectRatio) / 2;
+                this.letterBox2Start = (w * this.aspectRatio) / 2 + (h) / 2;
+                scaleX = w / (this.logicalWidth / this.aspectRatio);
+                scaleY = scaleX;
+                baseY = this.letterBox1End;
+                this.logicalWidthViewWidthInPixels = w;
+                this.logicalWidthViewHeightInPixels = this.letterBox2Start - this.letterBox1End;
             }
         }
-        this.logicalStartX = this.letterBox1End
-        this.logicalEndX= this.letterBox2Start
-        
+
+        scaleX *= Camera.main.transform.scaleX;
+        scaleY *= Camera.main.transform.scaleY;
+
+        this.worldContainer.scale.set(scaleX, scaleY);
+        this.worldContainer.position.set(
+            baseX - Camera.main.transform.x * scaleX,
+            baseY - Camera.main.transform.y * scaleY
+        );
+
+        this.logicalStartX = this.letterBox1End;
+        this.logicalEndX= this.letterBox2Start;
+    }
+
+    destroy() {
+        for (const gameObject of this.gameObjects) {
+            if (gameObject.onDestroy) {
+                gameObject.onDestroy();
+            }
+        }
+        if (this.stageContainer) {
+            Engine.app.stage.removeChild(this.stageContainer);
+            this.stageContainer.destroy({ children: true });
+        }
     }
 }
 

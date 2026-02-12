@@ -12,19 +12,8 @@
 </head>
 
 <body>
-    <canvas id="canv">
-    </canvas>
-
-    <script type="module">
-        import "/engine/Engine.js"
-        import "/games/scenes/GameScene.js"
-        import "/games/scenes/DeathScene.js"
-        // import "/games/scenes/3DScene.js"
-        Engine.currentScene = new GameScene();
-        // Engine.currentScene = new ThreeDScene();
-
-        Engine.setup()
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.0/pixi.min.js"></script>
+    <script type="module" src="/main.js"></script>
 </body>
 
 </html>
