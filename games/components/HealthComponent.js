@@ -1,41 +1,41 @@
 class HealthComponent extends Component {
     constructor() {
         super();
-        EventSystem.registerListener(this)
+        EventSystem.registerListener(this);
     }
+
     start() {
-        this.health = 3
-        this.cooldown = 0
-        this.maxCooldown = 1
-
+        this.health = 3;
+        this.cooldown = 0;
+        this.maxCooldown = 1;
     }
-    update() {
 
-        let player = GameObject.find('PlayerPrefab')
-        
-        if (this.cooldown !== 0) {
-            player.components[1].fill = 'yellow'
-            player.components[1].stroke = 'yellow'
+    update() {
+        const player = GameObject.find('PlayerPrefab');
+
+        if (player && this.cooldown !== 0) {
+            player.components[1].fill = 'yellow';
+            player.components[1].stroke = 'yellow';
         }
+
         if (this.cooldown < 0) {
-            this.cooldown = 0
+            this.cooldown = 0;
         }
         else if (this.cooldown > 0) {
-            this.cooldown -= Time.deltaTime
+            this.cooldown -= Time.deltaTime;
         }
-
     }
+
     handleEvent(event) {
-        if (this.health === 0) {
-            Engine.changeScene(new DeathScene())
-
-        }
         if (event.type === "collision" && this.cooldown === 0) {
-            this.health -= 1
-            this.cooldown = this.maxCooldown
+            this.health -= 1;
+            this.cooldown = this.maxCooldown;
         }
-        
 
+        if (this.health <= 0) {
+            Engine.changeScene(new DeathScene());
+        }
     }
 }
-window.HealthComponent = HealthComponent
+
+window.HealthComponent = HealthComponent;
