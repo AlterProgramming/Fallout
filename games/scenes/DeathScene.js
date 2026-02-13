@@ -13,8 +13,12 @@ class DeathScene extends Scene {
     }
 
     start() {
-        GameObject.instantiate(new GameOverTextPrefab(), this.logicalStartX + 450, window.innerHeight / 2);
-        GameObject.instantiate(new DeathScorePrefab(), 50, 40);
+        const visibleWorldWidth = this.logicalWidth / this.aspectRatio;
+        const centerX = visibleWorldWidth / 2;
+        const centerY = this.logicalWidth / 2;
+
+        GameObject.instantiate(new GameOverTextPrefab(), centerX, centerY);
+        GameObject.instantiate(new DeathScorePrefab(), centerX, centerY + 70);
     }
 
     update(){

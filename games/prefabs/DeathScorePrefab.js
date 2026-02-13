@@ -1,7 +1,10 @@
 class DeathScorePrefab extends GameObject {
     constructor(name = 'DeathScorePrefab') {
         super(name);
-        this.addComponent(new Text(`${Globals.score}`, "24px Arial", "white"));
+        const scoreText = new Text(`Score: ${Globals.score}`, "32px Arial", "white");
+        scoreText.anchorX = 0.5;
+        scoreText.anchorY = 0.5;
+        this.addComponent(scoreText);
     }
 }
 

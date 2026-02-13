@@ -4,6 +4,8 @@ class Text extends Component {
     this.text = text;
     this.font = font;
     this.fill = fill;
+    this.anchorX = 0;
+    this.anchorY = 0;
 
   }
 
@@ -12,6 +14,7 @@ class Text extends Component {
       font: this.font,
       fill: this.fill,
     });
+    this.textObject.anchor.set(this.anchorX, this.anchorY);
     Engine.currentScene.worldContainer.addChild(this.textObject);
     this.parent.displayObject = this.textObject;
   }
@@ -22,6 +25,7 @@ class Text extends Component {
     this.textObject.text = this.text;
     this.textObject.style.font = this.font;
     this.textObject.style.fill = this.fill;
+    this.textObject.anchor.set(this.anchorX, this.anchorY);
     this.textObject.position.set(this.transform.x, this.transform.y);
   }
 
