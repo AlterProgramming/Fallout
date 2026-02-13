@@ -1,9 +1,7 @@
 class GameOverTextPrefab extends GameObject {
     constructor(name = 'GameOverTextPrefab') {
         super(name);
-        const gameOverText = new Text("Game Over!", "64px Arial", "white");
-        gameOverText.anchorX = 0.5;
-        gameOverText.anchorY = 0.5;
+        const gameOverText = new Text("Game Over!", 64, "Arial", "white");
         this.addComponent(gameOverText);
     }
 }

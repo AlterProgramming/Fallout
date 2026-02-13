@@ -1,20 +1,18 @@
 class Text extends Component {
-  constructor(text = "", font = "30px sans", fill = "gray") {
+  constructor(text = "", fontSize = 30, fontFamily = "sans", fill = "gray") {
     super();
     this.text = text;
-    this.font = font;
+    this.fontSize = fontSize;
+    this.fontFamily = fontFamily;
     this.fill = fill;
-    this.anchorX = 0;
-    this.anchorY = 0;
-
   }
 
   start() {
     this.textObject = new window.PIXI.Text(this.text, {
-      font: this.font,
+      fontSize: this.fontSize,
+      fontFamily: this.fontFamily,
       fill: this.fill,
     });
-    this.textObject.anchor.set(this.anchorX, this.anchorY);
     Engine.currentScene.worldContainer.addChild(this.textObject);
     this.parent.displayObject = this.textObject;
   }
@@ -23,9 +21,9 @@ class Text extends Component {
     if (!this.textObject || !this.textObject.style) return;
 
     this.textObject.text = this.text;
-    this.textObject.style.font = this.font;
+    this.textObject.style.fontSize = this.fontSize;
+    this.textObject.style.fontFamily = this.fontFamily;
     this.textObject.style.fill = this.fill;
-    this.textObject.anchor.set(this.anchorX, this.anchorY);
     this.textObject.position.set(this.transform.x, this.transform.y);
   }
 

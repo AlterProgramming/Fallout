@@ -16,12 +16,15 @@ class DeathScene extends Scene {
         const visibleWorldWidth = this.logicalWidth / this.aspectRatio;
         const centerX = visibleWorldWidth / 2;
         const centerY = this.logicalWidth / 2;
-
-        GameObject.instantiate(new GameOverTextPrefab(), centerX, centerY);
-        GameObject.instantiate(new DeathScorePrefab(), centerX, centerY + 70);
+        
+        // Use logical coordinates relative to the viewport, not raw screen coordinates
+        GameObject.instantiate(new GameOverTextPrefab(), centerX, centerY - 100);
+        GameObject.instantiate(new DeathScorePrefab(), centerX + 60, centerY);
     }
 
     update(){
+        super.update();
+        
         if (this.timeSpent >= this.timeBeforeRespawn) {
             Engine.changeScene(new GameScene());
             return;
