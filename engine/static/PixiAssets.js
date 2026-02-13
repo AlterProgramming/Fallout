@@ -10,6 +10,7 @@ const PLAYER_SVG = svgToDataUri(`
 
 const PLAYER_IMG = new Image();
 PLAYER_IMG.src = 'engine/static/assets/pixi/player.png';
+const MONSTER_IMG = 'engine/static/assets/pixi/monster_transparent.png'
 const MONSTER_SVG = svgToDataUri(`
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" shape-rendering="crispEdges">
   <rect width="64" height="64" fill="transparent"/>
@@ -39,12 +40,14 @@ class PixiAssets {
 
     if (!PixiAssets.registered) {
       Assets.add("player", PLAYER_SVG);
+      Assets.add("player_img", PLAYER_IMG.src);
       Assets.add("monster", MONSTER_SVG);
+      Assets.add("monster_img", MONSTER_IMG);
       Assets.add("cloud", CLOUD_SVG);
       PixiAssets.registered = true;
     }
 
-    await Assets.load(["player", "monster", "cloud"]);
+    await Assets.load(["player", "player_img", "monster", "monster_img", "cloud"]);
   }
 }
 

@@ -10,7 +10,8 @@ class SquareFoesPrefab extends GameObject {
     }
     onSpawn(ctx){
         this.transform.timeRatio = 1
-        this.addComponent(new Sprite("monster", "white"))
+        // this.addComponent(new Sprite("monster", "white"))
+        this.addComponent(new Sprite("monster_img", "white"))
         // this.addComponent(new TimeSlowDownComponent())
         this.addComponent(new MoveUpComponent(1))
         this.addComponent(new MarkForDeletionComponent())
