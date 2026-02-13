@@ -62,11 +62,15 @@ class Scene {
 
     }
     update() {
+        if (Engine.currentScene !== this) return;
+
         this.applyViewport();
 
         this.gameObjects.sort((a, b)=> a.layer - b.layer)
 
         for (const gameObject of this.gameObjects) {
+            if (Engine.currentScene !== this) return;
+
             if (gameObject.update) {
                 gameObject.update();
             }

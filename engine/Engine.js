@@ -49,24 +49,38 @@ class Engine {
   }
 
   static gameLoop() {
-    if (!Engine.currentScene) return;
+    const frameScene = Engine.currentScene;
+    if (!frameScene) return;
 
     if (Input.keysUpThisFrame.includes("Escape")) {
       Engine.isSystemPaused = !Engine.isSystemPaused;
     }
 
-    Engine.currentScene._start();
+    frameScene._start();
+    if (Engine.currentScene !== frameScene) {
+      Input.update();
+      return;
+    }
 
     if (!Engine.isSystemPaused) {
-      Engine.currentScene.onSpawn();
-      Engine.currentScene.update();
+      frameScene.onSpawn();
+      if (Engine.currentScene !== frameScene) {
+        Input.update();
+        return;
+      }
 
-      for (const gameObject of Engine.currentScene.gameObjects) {
+      frameScene.update();
+      if (Engine.currentScene !== frameScene) {
+        Input.update();
+        return;
+      }
+
+      for (const gameObject of frameScene.gameObjects) {
         if (gameObject.markForDestroy && gameObject.onDestroy) {
           gameObject.onDestroy();
         }
       }
-      Engine.currentScene.gameObjects = Engine.currentScene.gameObjects.filter(
+      frameScene.gameObjects = frameScene.gameObjects.filter(
         (o) => o.markForDestroy === false
       );
     }

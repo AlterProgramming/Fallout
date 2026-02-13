@@ -17,7 +17,8 @@ class Text extends Component {
   }
 
   update() {
-    if (!this.textObject) return;
+    if (!this.textObject || !this.textObject.style) return;
+
     this.textObject.text = this.text;
     this.textObject.style.font = this.font;
     this.textObject.style.fill = this.fill;
@@ -26,6 +27,7 @@ class Text extends Component {
 
   onDestroy() {
     this.textObject?.destroy();
+    this.textObject = null;
   }
 }
 
