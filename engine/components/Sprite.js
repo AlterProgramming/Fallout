@@ -21,7 +21,18 @@ class Sprite extends Component {
 
     const width = this.sprite.texture.width || 1;
     const height = this.sprite.texture.height || 1;
-    this.sprite.scale.set(this.transform.scaleX / width, this.transform.scaleY / height);
+
+    let renderScaleX = this.transform.scaleX;
+    let renderScaleY = this.transform.scaleY;
+
+    if (renderScaleX === 1 && renderScaleY !== 1) {
+      renderScaleX = renderScaleY;
+    }
+    if (renderScaleY === 1 && renderScaleX !== 1) {
+      renderScaleY = renderScaleX;
+    }
+
+    this.sprite.scale.set(renderScaleX / width, renderScaleY / height);
     this.sprite.tint = window.PIXI.utils.string2hex(this.fill);
   }
 

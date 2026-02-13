@@ -18,7 +18,7 @@ class GameScene extends Scene {
     }
     start(ctx){
         GameObject.instantiate(new TimePrefab())
-        GameObject.instantiate(new PlayerPrefab(),300 + this.letterBox1End, 100,35 )
+        GameObject.instantiate(new PlayerPrefab(),300 + this.letterBox1End, 100,35,35 )
         // GameObject.instantiate(new ScorePrefab(),window.innerWidth - 100, 50 )
         GameObject.instantiate(new ScorePrefab(),this.letterBox2Start  , 50 )
         GameObject.instantiate(new EnemySpawnerPrefab())
@@ -27,8 +27,8 @@ class GameScene extends Scene {
         GameObject.instantiate(new FreeMovementSkillPrefab(), this.letterBox2Start -120, this.logicalWidthViewHeightInPixels,100,100)   
         GameObject.instantiate(new ControllerPrefab()) 
         
-        GameObject.instantiate(new CloudPrefab(), this.logicalStartX, this.logicalStartY , 25)
-        GameObject.instantiate(new CloudPrefab(), this.logicalStartX + 25, this.logicalStartY , 25)
+        GameObject.instantiate(new CloudPrefab(), this.logicalStartX, this.logicalStartY , 25,25)
+        GameObject.instantiate(new CloudPrefab(), this.logicalStartX + 25, this.logicalStartY , 25,25)
         GameObject.instantiate(new CloudSpawnerPrefab())
         GameObject.instantiate(new HealthPrefab(), this.logicalStartX +50, this.logicalWidthViewHeightInPixels, 100,100)
         

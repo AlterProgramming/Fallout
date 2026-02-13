@@ -3,8 +3,8 @@ const svgToDataUri = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURICompo
 const PLAYER_SVG = svgToDataUri(`
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" shape-rendering="crispEdges">
   <rect width="64" height="64" fill="transparent"/>
-  <path d="M32 4 L50 30 L41 30 L41 56 L23 56 L23 30 L14 30 Z" fill="#31d843" stroke="#0a5a14" stroke-width="2"/>
-  <rect x="26" y="18" width="12" height="14" fill="#84c6ff" stroke="#2c5d95" stroke-width="2"/>
+  <path d="M32 4 L50 30 L41 30 L41 56 L23 56 L23 30 L14 30 Z" fill="#ffffff" stroke="#d8d8d8" stroke-width="2"/>
+  <rect x="26" y="18" width="12" height="14" fill="#f5f5f5" stroke="#d0d0d0" stroke-width="2"/>
 </svg>
 `);
 
