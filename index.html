@@ -1,29 +1,299 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Fallout</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>First Water Discovery</title>
     <style>
+        :root {
+            color-scheme: dark;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 40% 20%, #292237 0%, #090b12 55%, #05050a 100%);
+            color: #f6ecd8;
+            display: grid;
+            place-items: center;
+            padding: 1rem;
+        }
+
+        .frame {
+            width: min(1100px, 100%);
+            border: 1px solid rgba(213, 177, 114, 0.4);
+            border-radius: 16px;
             overflow: hidden;
+            background: rgba(6, 6, 10, 0.8);
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+        }
+
+        .hud {
+            padding: 0.9rem 1rem;
+            display: grid;
+            gap: 0.45rem;
+            border-bottom: 1px solid rgba(245, 219, 173, 0.25);
+            background: linear-gradient(120deg, rgba(40, 26, 17, 0.92), rgba(15, 17, 29, 0.75));
+        }
+
+        .hud h1 {
+            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+            letter-spacing: 0.04em;
+        }
+
+        .hud p {
+            color: rgba(255, 239, 213, 0.9);
+            font-size: 0.95rem;
+        }
+
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            color: rgba(170, 224, 255, 0.95);
+            font-weight: 650;
+            font-size: 0.95rem;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #07080f;
         }
     </style>
 </head>
 
 <body>
-    <canvas id="canv">
-    </canvas>
+    <section class="frame">
+        <header class="hud">
+            <h1>The First Discovery of Water</h1>
+            <p>Move the first explorer with <strong>← →</strong>. Strike the tunnel wall with <strong>Space</strong> until the aquifer breaks open.</p>
+            <div class="stats">
+                <span id="depth">Depth: 0m</span>
+                <span id="phase">Phase: Carving Stone</span>
+            </div>
+        </header>
+        <canvas id="scene" width="1050" height="560" aria-label="Cinematic scene of first water discovery"></canvas>
+    </section>
 
     <script type="module">
-        import "/engine/Engine.js"
-        import "/games/scenes/GameScene.js"
-        import "/games/scenes/DeathScene.js"
-        // import "/games/scenes/3DScene.js"
-        Engine.currentScene = new GameScene();
-        // Engine.currentScene = new ThreeDScene();
+        const canvas = document.getElementById('scene');
+        const depthEl = document.getElementById('depth');
+        const phaseEl = document.getElementById('phase');
+        const ctx = canvas.getContext('2d');
 
-        Engine.setup()
+        const state = {
+            tunnelProgress: 0,
+            maxDepth: 110,
+            discovered: false,
+            splashTime: 0,
+            lastTime: performance.now(),
+        };
+
+        const explorer = {
+            x: 170,
+            y: 345,
+            direction: 1,
+            speed: 0,
+        };
+
+        const keys = new Set();
+        const particles = [];
+
+        function emitParticles(amount, tint) {
+            for (let i = 0; i < amount; i++) {
+                particles.push({
+                    x: explorer.x + 30 + Math.random() * 25,
+                    y: explorer.y - 35 + Math.random() * 30,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: -Math.random() * 3.5,
+                    life: 0.6 + Math.random() * 1.1,
+                    tint,
+                });
+            }
+        }
+
+        window.addEventListener('keydown', (event) => {
+            keys.add(event.key);
+
+            if (event.key === ' ') {
+                event.preventDefault();
+
+                if (!state.discovered) {
+                    state.tunnelProgress = Math.min(state.maxDepth, state.tunnelProgress + 5);
+                    emitParticles(20, 'rgba(215, 176, 120, 0.88)');
+
+                    if (state.tunnelProgress >= state.maxDepth) {
+                        state.discovered = true;
+                        state.splashTime = 0;
+                        emitParticles(80, 'rgba(125, 198, 255, 0.95)');
+                    }
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (event) => keys.delete(event.key));
+
+        function drawWorld(time) {
+            const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            bg.addColorStop(0, '#10162a');
+            bg.addColorStop(0.4, '#22182a');
+            bg.addColorStop(1, '#37231a');
+
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ab7f57';
+            ctx.fillRect(0, 110, canvas.width, canvas.height - 110);
+
+            ctx.fillStyle = '#2b1a12';
+            ctx.fillRect(0, 195, canvas.width, 170);
+
+            const torch = 0.2 + Math.sin(time * 0.008) * 0.09;
+            ctx.fillStyle = `rgba(255, 226, 153, ${torch})`;
+            ctx.fillRect(explorer.x + 35, explorer.y - 80, 105, 100);
+
+            ctx.fillStyle = '#513624';
+            ctx.fillRect(808, 210, 190, 140);
+            ctx.fillStyle = '#20120d';
+            ctx.fillRect(823, 220, 150, 120);
+
+            const crackHeight = Math.max(10, 95 * (state.tunnelProgress / state.maxDepth));
+            ctx.fillStyle = state.discovered ? '#4b89c8' : '#171010';
+            ctx.fillRect(972, 343 - crackHeight, 12, crackHeight + 6);
+        }
+
+        function drawExplorer() {
+            ctx.save();
+            ctx.translate(explorer.x, explorer.y);
+            ctx.scale(explorer.direction, 1);
+
+            ctx.fillStyle = '#3a2720';
+            ctx.fillRect(-9, -12, 18, 12);
+
+            ctx.fillStyle = '#926741';
+            ctx.fillRect(-9, -39, 18, 28);
+
+            ctx.fillStyle = '#d9b895';
+            ctx.beginPath();
+            ctx.arc(0, -47, 9, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#f5dd81';
+            ctx.beginPath();
+            ctx.arc(11, -47, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#d1b56b';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(8, -24);
+            ctx.lineTo(40, -14);
+            ctx.stroke();
+
+            ctx.fillStyle = '#735237';
+            ctx.fillRect(35, -18, 16, 7);
+            ctx.restore();
+        }
+
+        function drawWater(time) {
+            if (!state.discovered) return;
+
+            state.splashTime += 0.016;
+            const wave = Math.sin(time * 0.01) * 7;
+            const waterTop = 310 + wave;
+
+            ctx.fillStyle = 'rgba(67, 142, 222, 0.78)';
+            ctx.fillRect(805, waterTop, 200, 120);
+            ctx.fillStyle = 'rgba(166, 230, 255, 0.9)';
+            ctx.fillRect(805, waterTop, 200, 7);
+
+            if (state.splashTime < 4.2) {
+                for (let i = 0; i < 4; i++) {
+                    particles.push({
+                        x: 840 + Math.random() * 120,
+                        y: waterTop + 5,
+                        vx: (Math.random() - 0.5) * 2.7,
+                        vy: -2 - Math.random() * 2.2,
+                        life: 0.7,
+                        tint: 'rgba(171, 233, 255, 0.98)',
+                    });
+                }
+            }
+        }
+
+        function updateParticles(delta) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.life -= delta;
+                p.vy += 3.2 * delta;
+                p.x += p.vx * 40 * delta;
+                p.y += p.vy * 40 * delta;
+
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function drawParticles() {
+            for (const p of particles) {
+                ctx.fillStyle = p.tint;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2 + p.life * 3.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawNarration() {
+            ctx.font = '24px Inter, system-ui, sans-serif';
+            if (state.discovered) {
+                ctx.fillStyle = 'rgba(190, 235, 255, 0.95)';
+                ctx.fillText('Water answers the tunnel. Civilization begins.', 32, 76);
+            } else {
+                ctx.fillStyle = 'rgba(255, 242, 204, 0.9)';
+                ctx.fillText('Strike the stone: press Space.', 32, 76);
+            }
+        }
+
+        function tick(time) {
+            const delta = Math.min(0.033, (time - state.lastTime) / 1000);
+            state.lastTime = time;
+
+            explorer.speed = 0;
+            if (keys.has('ArrowLeft')) {
+                explorer.speed = -170;
+                explorer.direction = -1;
+            }
+            if (keys.has('ArrowRight')) {
+                explorer.speed = 170;
+                explorer.direction = 1;
+            }
+
+            explorer.x += explorer.speed * delta;
+            explorer.x = Math.max(20, Math.min(745, explorer.x));
+
+            drawWorld(time);
+            drawWater(time);
+            updateParticles(delta);
+            drawParticles();
+            drawExplorer();
+            drawNarration();
+
+            depthEl.textContent = `Depth: ${Math.round(state.tunnelProgress * 1.9)}m`;
+            phaseEl.textContent = state.discovered
+                ? 'Phase: Water Discovered — Birth of Settlements'
+                : 'Phase: Carving Stone';
+
+            requestAnimationFrame(tick);
+        }
+
+        requestAnimationFrame(tick);
     </script>
 </body>
 
