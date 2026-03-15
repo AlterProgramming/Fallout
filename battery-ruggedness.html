@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iPhone Battery Ruggedness Gauge</title>
+    <link rel="stylesheet" href="battery-ruggedness.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <h1>iPhone Battery Ruggedness Gauge</h1>
+        <p>
+          Estimate ruggedness by combining your phone's current battery strain
+          signals into a single score.
+        </p>
+      </header>
+
+      <section class="card grid">
+        <label>
+          Battery level
+          <div class="input-row">
+            <input id="batteryLevel" type="range" min="1" max="100" value="78" />
+            <output id="batteryLevelValue" for="batteryLevel">78%</output>
+          </div>
+        </label>
+
+        <label>
+          Battery temperature
+          <div class="input-row">
+            <input id="temperature" type="range" min="20" max="55" value="33" />
+            <output id="temperatureValue" for="temperature">33°C</output>
+          </div>
+        </label>
+
+        <label>
+          CPU pressure
+          <div class="input-row">
+            <input id="cpuLoad" type="range" min="0" max="100" value="42" />
+            <output id="cpuLoadValue" for="cpuLoad">42%</output>
+          </div>
+        </label>
+
+        <label>
+          Brightness pressure
+          <div class="input-row">
+            <input id="brightness" type="range" min="0" max="100" value="65" />
+            <output id="brightnessValue" for="brightness">65%</output>
+          </div>
+        </label>
+
+        <label>
+          Radio pressure (5G/GPS/Bluetooth)
+          <div class="input-row">
+            <input id="radio" type="range" min="0" max="100" value="60" />
+            <output id="radioValue" for="radio">60%</output>
+          </div>
+        </label>
+      </section>
+
+      <section class="card result">
+        <h2>Ruggedness score</h2>
+        <p class="score-line">
+          <span id="score">74</span>
+          <span class="score-max">/100</span>
+        </p>
+        <p id="verdict" class="verdict">Stable under current battery strain.</p>
+        <ul id="insights"></ul>
+      </section>
+    </main>
+
+    <script src="battery-ruggedness.js"></script>
+  </body>
+</html>

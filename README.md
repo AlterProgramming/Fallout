@@ -9,3 +9,11 @@ Rules are simple:
 . Game gets progressively harder the higher the score.
 
 Enjoy!!
+
+## Additional app: iPhone Battery Ruggedness Gauge
+
+This repository now also includes a lightweight browser app that estimates a
+"ruggedness" score based on battery strain signals (battery level,
+temperature, CPU pressure, brightness pressure, and radio pressure).
+
+Open `battery-ruggedness.html` in a browser to use it.
