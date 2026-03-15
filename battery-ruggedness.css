@@ -1,0 +1,119 @@
+:root {
+  color-scheme: light;
+  --bg: #f7f9fc;
+  --card: #ffffff;
+  --ink: #111827;
+  --muted: #4b5563;
+  --ok: #0f766e;
+  --warn: #b45309;
+  --risk: #b91c1c;
+  --ring: #cbd5e1;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(170deg, #eef2ff 0%, var(--bg) 45%, #f8fafc 100%);
+  color: var(--ink);
+}
+
+.app {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+header p {
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--ring);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 6%);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.input-row {
+  margin-top: 0.4rem;
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+output {
+  min-width: 3.8rem;
+  text-align: right;
+  font-weight: 700;
+}
+
+.result {
+  margin-top: 1rem;
+}
+
+.score-line {
+  margin: 0.2rem 0 0.45rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+#score {
+  font-size: 3rem;
+  font-weight: 800;
+}
+
+.score-max {
+  color: var(--muted);
+}
+
+.verdict {
+  margin-top: 0;
+  font-weight: 600;
+}
+
+.verdict.ok {
+  color: var(--ok);
+}
+
+.verdict.warn {
+  color: var(--warn);
+}
+
+.verdict.risk {
+  color: var(--risk);
+}
+
+#insights {
+  margin-bottom: 0;
+  color: #1f2937;
+  padding-left: 1.1rem;
+}
+
+@media (max-width: 600px) {
+  #score {
+    font-size: 2.4rem;
+  }
+}
