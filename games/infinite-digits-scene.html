@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infinite Digits Tunnel</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: radial-gradient(circle at center, #1326a4 0%, #03106a 45%, #01073f 100%);
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      #hud {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        color: #c7d2fe;
+        font-size: 14px;
+        line-height: 1.4;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+        z-index: 2;
+        background: rgba(3, 6, 40, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 10px 12px;
+        border-radius: 8px;
+      }
+
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hud">
+      Infinite digit tunnel (Three.js)<br />
+      Pi digit sequence in circular depth lanes. Objects are culled and disposed.
+    </div>
+
+    <script type="module">
+      import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+
+      const scene = new THREE.Scene();
+
+      const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 220);
+      camera.position.z = 6.4;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+      const key = new THREE.DirectionalLight(0xffffff, 0.45);
+      key.position.set(4, 3, 10);
+      scene.add(key);
+
+      const activeDigits = [];
+      const maxActiveDigits = 300;
+      const travelSpeed = 16.5;
+      const frontCullZ = camera.position.z + 3;
+
+      // Two core values create the layered infinity feeling:
+      // 1) baseDepthZ => where a circular stream emanates from.
+      // 2) depthStepZ => how tightly each stream is stacked in depth.
+      const streamConfig = [
+        {
+          baseDepthZ: -135,
+          depthStepZ: 1.25,
+          radiusX: 6.1,
+          radiusY: 8.9,
+          angularStep: 0.4,
+          spinRate: 0.55,
+        },
+        {
+          baseDepthZ: -98,
+          depthStepZ: 0.95,
+          radiusX: 4.8,
+          radiusY: 7.1,
+          angularStep: 0.6,
+          spinRate: 0.8,
+        },
+      ];
+
+      const streamState = streamConfig.map((stream, index) => ({
+        index,
+        nextSpawnZ: stream.baseDepthZ,
+        phase: index * Math.PI * 0.9,
+      }));
+
+      const spawnBudgetPerSecond = 30;
+      let spawnAccumulator = 0;
+
+      // First several hundred digits of pi (without decimal point) used as a deterministic stream.
+      const piDigits =
+        '3141592653589793238462643383279502884197169399375105820974944592' +
+        '3078164062862089986280348253421170679821480865132823066470938446' +
+        '0955058223172535940812848111745028410270193852110555964462294895' +
+        '4930381964428810975665933446128475648233786783165271201909145648' +
+        '5669234603486104543266482133936072602491412737245870066063155881';
+      let piIndex = 0;
+
+      function nextPiDigit() {
+        const digit = piDigits[piIndex % piDigits.length];
+        piIndex += 1;
+        return digit;
+      }
+
+      const sharedGeometry = new THREE.PlaneGeometry(1.2, 1.2);
+      const digitMaterialCache = new Map();
+
+      function getDigitMaterial(digitChar) {
+        if (digitMaterialCache.has(digitChar)) {
+          return digitMaterialCache.get(digitChar);
+        }
+
+        const material = new THREE.MeshBasicMaterial({
+          map: createDigitTexture(digitChar),
+          transparent: true,
+          alphaTest: 0.05,
+          depthWrite: false,
+        });
+
+        digitMaterialCache.set(digitChar, material);
+        return material;
+      }
+
+      function createDigitTexture(digitChar) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+
+        ctx.clearRect(0, 0, 128, 128);
+        ctx.font = '700 96px Georgia, Times, serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = 'rgba(0,0,0,0.38)';
+        ctx.strokeText(digitChar, 64, 66);
+        ctx.fillStyle = '#f5f8ff';
+        ctx.fillText(digitChar, 64, 66);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.needsUpdate = true;
+        return texture;
+      }
+
+      function spawnDigitFromStream(state) {
+        const stream = streamConfig[state.index];
+
+        const digit = nextPiDigit();
+        const material = getDigitMaterial(digit);
+        const mesh = new THREE.Mesh(sharedGeometry, material);
+
+        state.phase += stream.angularStep + Math.random() * 0.25;
+        const laneWave = Math.sin(state.phase * 0.4) * 0.35;
+        const rx = stream.radiusX * (0.76 + Math.random() * 0.35 + laneWave * 0.08);
+        const ry = stream.radiusY * (0.76 + Math.random() * 0.35 - laneWave * 0.08);
+
+        mesh.position.set(Math.cos(state.phase) * rx, Math.sin(state.phase) * ry, state.nextSpawnZ);
+
+        const depthScale = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(Math.abs(state.nextSpawnZ), 0, 150, 2.5, 0.35), 0.35, 2.5);
+        mesh.scale.setScalar(depthScale * (0.9 + Math.random() * 0.55));
+
+        mesh.userData.spin = (Math.random() - 0.5) * stream.spinRate;
+        mesh.userData.velocity = travelSpeed + Math.random() * 2.8;
+
+        scene.add(mesh);
+        activeDigits.push(mesh);
+
+        state.nextSpawnZ -= stream.depthStepZ;
+      }
+
+      function removeDigitAt(index) {
+        const mesh = activeDigits[index];
+        if (!mesh) return;
+
+        scene.remove(mesh);
+        activeDigits.splice(index, 1);
+      }
+
+      function fillInitialDepth() {
+        while (activeDigits.length < maxActiveDigits) {
+          for (const state of streamState) {
+            if (activeDigits.length >= maxActiveDigits) break;
+            spawnDigitFromStream(state);
+          }
+        }
+      }
+
+      fillInitialDepth();
+
+      const clock = new THREE.Clock();
+
+      function animate() {
+        const dt = Math.min(clock.getDelta(), 0.05);
+        spawnAccumulator += dt * spawnBudgetPerSecond;
+
+        const spawnCount = Math.floor(spawnAccumulator);
+        if (spawnCount > 0) {
+          spawnAccumulator -= spawnCount;
+
+          for (let i = 0; i < spawnCount; i++) {
+            if (activeDigits.length >= maxActiveDigits) break;
+            const lane = streamState[i % streamState.length];
+            spawnDigitFromStream(lane);
+          }
+        }
+
+        for (let i = activeDigits.length - 1; i >= 0; i--) {
+          const mesh = activeDigits[i];
+          mesh.position.z += mesh.userData.velocity * dt;
+          mesh.rotation.z += mesh.userData.spin * dt;
+          mesh.lookAt(camera.position);
+
+          if (mesh.position.z > frontCullZ) {
+            removeDigitAt(i);
+          }
+        }
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      window.addEventListener('beforeunload', () => {
+        for (let i = activeDigits.length - 1; i >= 0; i--) {
+          removeDigitAt(i);
+        }
+
+        sharedGeometry.dispose();
+        for (const material of digitMaterialCache.values()) {
+          material.map.dispose();
+          material.dispose();
+        }
+        digitMaterialCache.clear();
+
+        renderer.dispose();
+      });
+    </script>
+  </body>
+</html>
