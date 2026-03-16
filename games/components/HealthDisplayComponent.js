@@ -1,33 +1,37 @@
 class HealthDisplayComponent extends Component {
     constructor(){
         super();
-        
         this.fill = "red"
-        // this.text = this.parent.findComponent("HealthComponent").health
     }
-    // start(ctx){
-    //     this.text = this.parent.findComponent("HealthComponent").health
-    //     super.start(ctx);
 
-    // }
-    draw(ctx){
-        const isCooldown = this.parent.getComponent("HealthComponent").cooldown === 0
-        
-        ctx.fillStyle = this.fill;
-        ctx.strokeStyle = this.stroke;
-        ctx.beginPath()
-        ctx.rect(
-        this.transform.x - this.transform.scaleX / 2,
-        this.transform.y - this.transform.scaleY / 2,
-        this.transform.scaleX, this.transform.scaleY
-        )
-        ctx.fill();
-        ctx.stroke()
+    start(){
+        this.graphics = new window.PIXI.Graphics();
+        this.label = new window.PIXI.Text('', { font: '32px Arial', fill: 'black' });
+        Engine.currentScene.worldContainer.addChild(this.graphics);
+        Engine.currentScene.worldContainer.addChild(this.label);
+        this.parent.displayObject = this.graphics;
+    }
 
-        ctx.fillStyle = 'black'
-        ctx.font = '32px Arial'
+    update(){
+        this.graphics.clear();
+        this.graphics.lineStyle(2, 0x000000);
+        this.graphics.beginFill(window.PIXI.utils.string2hex(this.fill));
+        this.graphics.drawRect(
+            -this.transform.scaleX / 2,
+            -this.transform.scaleY / 2,
+            this.transform.scaleX,
+            this.transform.scaleY
+        );
+        this.graphics.endFill();
+        this.graphics.position.set(this.transform.x, this.transform.y);
 
-        ctx.fillText(this.parent.getComponent("HealthComponent").health, this.transform.x-32, this.transform.y+8)
+        this.label.text = `${this.parent.getComponent("HealthComponent").health}`;
+        this.label.position.set(this.transform.x - 32, this.transform.y - 16);
+    }
+
+    onDestroy() {
+        this.graphics?.destroy();
+        this.label?.destroy();
     }
 }
 window.HealthDisplayComponent = HealthDisplayComponent

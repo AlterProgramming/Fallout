@@ -1,29 +1,38 @@
 import "../components/ScoreReaderComponent.js";
+import GameScene from "./GameScene.js";
+import GameOverTextPrefab from "../prefabs/GameOverTextPrefab.js";
+import DeathScorePrefab from "../prefabs/DeathScorePrefab.js";
 
 class DeathScene extends Scene {
     constructor(){
         super('black');
         this.aspectRatio = 1;
         this.logicalWidth = 750; 
-        this.timeBeforeRespawn = 5
-        this.timeSpent = 0
-        let gameOver = new GameObject('GameOverText')
-        gameOver.addComponent(new Text("Game Over!", "64px Arial", "white"))
-        gameOver.transform.x = this.logicalStartX  + 450
-        gameOver.transform.y = window.innerHeight/2
-        this.gameObjects.push(gameOver)
-        let score = new GameObject("Score")
-        score.addComponent(new Text(Globals.score, "24px Arial", "white"))
-        score.transform.x = 50
-        score.transform.y = 40
-        this.gameObjects.push(score)
-
+        this.timeBeforeRespawn = 5;
+        this.timeSpent = 0;
     }
+
+    start() {
+        const visibleWorldWidth = this.logicalWidth / this.aspectRatio;
+        const centerX = visibleWorldWidth / 2;
+        const centerY = this.logicalWidth / 2;
+        
+        // Use logical coordinates relative to the viewport, not raw screen coordinates
+        GameObject.instantiate(new GameOverTextPrefab(), centerX, centerY - 100);
+        GameObject.instantiate(new DeathScorePrefab(), centerX + 60, centerY);
+    }
+
     update(){
-        if(this.timeSpent >= this.timeBeforeRespawn){
-            Engine.currentScene = new GameScene()
+        super.update();
+        
+        if (this.timeSpent >= this.timeBeforeRespawn) {
+            Engine.changeScene(new GameScene());
+            return;
         }
-        this.timeSpent += Time.deltaTime 
+
+        this.timeSpent += Time.deltaTime;
     }
 }
-window.DeathScene = DeathScene
+
+window.DeathScene = DeathScene;
+export default DeathScene;

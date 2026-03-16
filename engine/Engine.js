@@ -1,96 +1,102 @@
-import "./classes/Component.js"
-import "./classes/GameObject.js"
-import "./classes/Scene.js"
+import "./classes/Component.js";
+import "./classes/GameObject.js";
+import "./classes/Scene.js";
 
-import "./geometry/Vector.js"
-import "./geometry/Line.js"
-import "./geometry/Rectangle.js"
-import "./geometry/Circle.js"
+import "./geometry/Vector.js";
+import "./geometry/Line.js";
+import "./geometry/Rectangle.js";
+import "./geometry/Circle.js";
 
-import "./components/Circle.js"
-import "./components/Point.js"
-import "./components/Rectangle.js"
-import "./components/Text.js"
-import "./components/Transform.js"
+import "./components/Circle.js";
+import "./components/Point.js";
+import "./components/Rectangle.js";
+import "./components/Sprite.js";
+import "./components/Text.js";
+import "./components/Transform.js";
 
-import "./static/Collisions.js"
-import "./static/CollisionGeometric.js"
-import "./static/Input.js"
-import "./static/Globals.js"
-import "./static/Time.js"
-import "./static/EventSystem.js"
+import "./static/Collisions.js";
+import "./static/CollisionGeometric.js";
+import "./static/Input.js";
+import "./static/Globals.js";
+import "./static/Time.js";
+import "./static/EventSystem.js";
+import PixiAssets from "./static/PixiAssets.js";
 
-import "./prefabs/Camera.js"
-
+import "./prefabs/Camera.js";
 
 class Engine {
   isSystemPaused = false;
-  /**
-         * The game loop.
-         * The game loop calls update and draw using a timer
-         */
+
+  static async setup() {
+    document.addEventListener("keydown", Input.keydown);
+    document.addEventListener("keyup", Input.keyup);
+    document.addEventListener("mousemove", Input.mousemove);
+
+    await PixiAssets.load();
+
+    Engine.app = new window.PIXI.Application({
+      resizeTo: window,
+      backgroundColor: 0x000000,
+      antialias: false,
+    });
+
+    document.body.appendChild(Engine.app.view);
+
+    Engine.app.ticker.add((delta) => {
+      Time.update(delta);
+      Engine.gameLoop();
+    });
+  }
+
   static gameLoop() {
-    let canvas = document.querySelector("#canv")
-    let ctx = canvas.getContext("2d")
+    const frameScene = Engine.currentScene;
+    if (!frameScene) return;
 
-    //Make the canvas the same size as our window
-    //so it is "full screen"
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-
-    //System-level pause
     if (Input.keysUpThisFrame.includes("Escape")) {
-      if (Engine.isSystemPaused) {
-        Engine.isSystemPaused = false;
-      }
-      else {
-        Engine.isSystemPaused = true;
-      }
-    }
-    //Draw in world space
-    Engine.currentScene.draw(ctx)
-    if(!Engine.isSystemPaused){
-
-      
-      Engine.currentScene._start(ctx);
-      
-      // Initialize new spawned game objects
-      Engine.currentScene.onSpawn(ctx)
-      // Update the current scene
-      Engine.currentScene.update(ctx)
-      
-      
-      // Remove amything marked for deletion
-      Engine.currentScene.gameObjects = Engine.currentScene.gameObjects.filter(o => o.markForDestroy === false)
+      Engine.isSystemPaused = !Engine.isSystemPaused;
     }
 
-    //Update the input 
-    Input.update()
+    frameScene._start();
+    if (Engine.currentScene !== frameScene) {
+      Input.update();
+      return;
+    }
 
-    //Update the time
-    Time.update()
-    //Draw in Screen/UI space
-    //currentScene.drawUI(ctx)
+    if (!Engine.isSystemPaused) {
+      frameScene.onSpawn();
+      if (Engine.currentScene !== frameScene) {
+        Input.update();
+        return;
+      }
+
+      frameScene.update();
+      if (Engine.currentScene !== frameScene) {
+        Input.update();
+        return;
+      }
+
+      for (const gameObject of frameScene.gameObjects) {
+        if (gameObject.markForDestroy && gameObject.onDestroy) {
+          gameObject.onDestroy();
+        }
+      }
+      frameScene.gameObjects = frameScene.gameObjects.filter(
+        (o) => o.markForDestroy === false
+      );
+    }
+
+    Input.update();
   }
 
-  /** Setup the game **/
-  static setup() {
-    document.addEventListener("keydown", Input.keydown)
-    document.addEventListener("keyup", Input.keyup)
+  static changeScene(scene) {
+    if (Engine.currentScene && Engine.currentScene.destroy) {
+      Engine.currentScene.destroy();
+    }
 
-    document.addEventListener("mousemove", Input.mousemove)
-
-
-    //In the background, create a thread and call
-    //gameLoop every 100ms.
-
-    setInterval(Engine.gameLoop, Time.ms)
-  }
-  static changeScene(scene){
-    EventSystem.listeners = []
+    EventSystem.listeners = [];
     Engine.currentScene = scene;
   }
 }
 
-window.Engine = Engine
+window.Engine = Engine;
 export default Engine;
