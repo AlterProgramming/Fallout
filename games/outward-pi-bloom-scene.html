@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Outward Pi Bloom</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: radial-gradient(circle at center, #1a2db8 0%, #0b177b 44%, #050942 100%);
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      canvas {
+        display: block;
+      }
+
+      #hud {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        color: #dbeafe;
+        font-size: 14px;
+        line-height: 1.4;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        z-index: 2;
+        background: rgba(3, 6, 40, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 10px 12px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hud">
+      Outward Pi Bloom (Three.js)<br />
+      Digits spawn from center and expand outward in spiral arms.
+    </div>
+
+    <script type="module">
+      import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 260);
+      camera.position.z = 12;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+      const key = new THREE.DirectionalLight(0xffffff, 0.4);
+      key.position.set(3, 4, 10);
+      scene.add(key);
+
+      const activeDigits = [];
+      const maxActiveDigits = 340;
+      const spawnRate = 38;
+      const outerCullRadius = 16.5;
+      let spawnAccumulator = 0;
+
+      const piDigits =
+        '3141592653589793238462643383279502884197169399375105820974944592' +
+        '3078164062862089986280348253421170679821480865132823066470938446' +
+        '0955058223172535940812848111745028410270193852110555964462294895' +
+        '4930381964428810975665933446128475648233786783165271201909145648' +
+        '5669234603486104543266482133936072602491412737245870066063155881';
+      let piIndex = 0;
+
+      const armConfigs = [
+        { phase: 0, angularVel: 2.2, radialVel: 3.6, zVel: -1.2, spin: 0.6 },
+        { phase: Math.PI * 0.66, angularVel: 2.6, radialVel: 4.1, zVel: 0.9, spin: 0.8 },
+        { phase: Math.PI * 1.35, angularVel: 2.0, radialVel: 3.8, zVel: -0.7, spin: 0.5 },
+      ];
+      let nextArmIndex = 0;
+
+      function nextPiDigit() {
+        const digit = piDigits[piIndex % piDigits.length];
+        piIndex += 1;
+        return digit;
+      }
+
+      function createDigitTexture(digitChar) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+
+        ctx.clearRect(0, 0, 128, 128);
+        ctx.font = '700 96px Georgia, Times, serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+        ctx.strokeText(digitChar, 64, 66);
+        ctx.fillStyle = '#f8fbff';
+        ctx.fillText(digitChar, 64, 66);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.needsUpdate = true;
+        return texture;
+      }
+
+      function spawnDigit() {
+        const arm = armConfigs[nextArmIndex % armConfigs.length];
+        nextArmIndex += 1;
+
+        const geometry = new THREE.PlaneGeometry(1.15, 1.15);
+        const material = new THREE.MeshBasicMaterial({
+          map: createDigitTexture(nextPiDigit()),
+          transparent: true,
+          alphaTest: 0.06,
+          depthWrite: false,
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+
+        const startingRadius = 0.15 + Math.random() * 0.4;
+        const theta = arm.phase + (Math.random() - 0.5) * 0.35;
+        const z = (Math.random() - 0.5) * 1.8;
+
+        mesh.userData.radius = startingRadius;
+        mesh.userData.theta = theta;
+        mesh.userData.arm = arm;
+        mesh.userData.spinDirection = (Math.random() - 0.5) * arm.spin;
+
+        mesh.position.set(Math.cos(theta) * startingRadius, Math.sin(theta) * startingRadius, z);
+        mesh.scale.setScalar(0.2 + Math.random() * 0.14);
+
+        scene.add(mesh);
+        activeDigits.push(mesh);
+      }
+
+      function removeDigitAt(index) {
+        const mesh = activeDigits[index];
+        if (!mesh) return;
+
+        scene.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.map.dispose();
+        mesh.material.dispose();
+        activeDigits.splice(index, 1);
+      }
+
+      const clock = new THREE.Clock();
+
+      function animate() {
+        const dt = Math.min(clock.getDelta(), 0.05);
+        spawnAccumulator += dt * spawnRate;
+
+        const toSpawn = Math.floor(spawnAccumulator);
+        if (toSpawn > 0) {
+          spawnAccumulator -= toSpawn;
+          for (let i = 0; i < toSpawn; i++) {
+            if (activeDigits.length >= maxActiveDigits) break;
+            spawnDigit();
+          }
+        }
+
+        for (let i = activeDigits.length - 1; i >= 0; i--) {
+          const mesh = activeDigits[i];
+          const arm = mesh.userData.arm;
+
+          mesh.userData.radius += arm.radialVel * dt;
+          mesh.userData.theta += arm.angularVel * dt;
+          mesh.position.z += arm.zVel * dt;
+
+          const r = mesh.userData.radius;
+          const t = mesh.userData.theta;
+          mesh.position.x = Math.cos(t) * r;
+          mesh.position.y = Math.sin(t) * r;
+
+          const grow = THREE.MathUtils.smoothstep(r, 0.2, 7.8);
+          const fade = 1 - THREE.MathUtils.smoothstep(r, 8.8, outerCullRadius);
+          const scale = THREE.MathUtils.lerp(0.15, 1.95, grow);
+          mesh.scale.setScalar(scale);
+          mesh.material.opacity = Math.max(0.04, fade);
+
+          mesh.rotation.z += mesh.userData.spinDirection * dt;
+          mesh.lookAt(camera.position);
+
+          if (r > outerCullRadius || Math.abs(mesh.position.z) > 18) {
+            removeDigitAt(i);
+          }
+        }
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      window.addEventListener('beforeunload', () => {
+        for (let i = activeDigits.length - 1; i >= 0; i--) {
+          removeDigitAt(i);
+        }
+        renderer.dispose();
+      });
+    </script>
+  </body>
+</html>
