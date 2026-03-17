@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reply Radar</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="mail-app">
+      <header class="topbar">
+        <div>
+          <p class="kicker">Standalone Assistant</p>
+          <h1>Reply Radar</h1>
+          <p class="sub">
+            Sync your inbox, detect unanswered threads, and focus on critical follow-ups.
+          </p>
+        </div>
+        <button id="syncBtn" class="sync">Sync Gmail-style signals</button>
+      </header>
+
+      <section class="summary" id="summary"></section>
+
+      <section class="layout">
+        <div class="panel">
+          <h2>Inbox analysis</h2>
+          <ul id="inboxList" class="list"></ul>
+        </div>
+        <div class="panel">
+          <h2>Reply to-do list</h2>
+          <ul id="todoList" class="list"></ul>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
