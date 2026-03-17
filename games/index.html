@@ -1,30 +1,15 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 
 <head>
-    <title>Fallout</title>
-    <style>
-        * {
-            margin: 0;
-            overflow: hidden;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Content Library</title>
 </head>
 
 <body>
-    <canvas id="canv">
-    </canvas>
-
-    <script type="module">
-        import "../engine/Engine.js"
-        import "./scenes/GameScene.js"
-        import "./scenes/DeathScene.js"
-        import "./scenes/3DScene.js"
-        Engine.currentScene = new GameScene();
-        // Engine.currentScene = new ThreeDScene();
-
-        Engine.setup()
-    </script>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
 </body>
 
 </html>
